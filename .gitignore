@@ -1,0 +1,52 @@
+# ⚙️ Archivos y configuraciones específicas de Visual Studio
+.vs/
+*.suo
+*.user
+*.userprefs
+*.tmp
+*.cache
+*.suo.cache
+*.sln.docstates
+
+# 🏗️ Archivos temporales y de compilación
+*.pdb
+*.opendb
+*.aps
+*.ncb
+*.sdf
+*.ilk
+*.tlb
+*.plg
+*.pch
+*.obj
+*.exp
+*.lib
+*.tlh
+*.tli
+*.VC.db
+
+# 📦 Salida de compilación
+bin/
+obj/
+packages/
+NuGet/
+
+# 🔬 Resultados de pruebas unitarias
+TestResults/
+
+# 🔧 Configuraciones y archivos generados automáticamente
+ipch/
+*.tlog
+*.log
+*.csproj.user
+*.csproj.userprefs
+*.local
+*.buildextensions
+
+# 🗑️ Ignorar archivos del escritorio innecesarios
+Thumbs.db
+desktop.ini
+
+# 📜 Excluir archivos de monitoreo de registros
+Registro de monitoreo/
+MonitorArchivos_*.log
