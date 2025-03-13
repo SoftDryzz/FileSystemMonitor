@@ -1,4 +1,4 @@
-# üì° FileSystemMonitor - Monitoreo de Archivos en Tiempo Real
+# ?? FileSystemMonitor - Monitoreo de Archivos en Tiempo Real
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen) 
 ![.NET](https://img.shields.io/badge/.NET-8.0-blue)
@@ -7,44 +7,44 @@
 
 ---
 
-## üìú Descripci√≥n
+## ?? Descripci®Æn
 
-**FileSystemMonitor** es una aplicaci√≥n desarrollada en **C# con WPF** que permite **monitorear en tiempo real** cambios en el sistema de archivos. Detecta **creaci√≥n, modificaci√≥n, eliminaci√≥n y renombrado** de archivos y carpetas, mostrando la informaci√≥n en una interfaz amigable.
+**FileSystemMonitor** es una aplicaci®Æn desarrollada en **C# con WPF** que permite **monitorear en tiempo real** cambios en el sistema de archivos. Detecta **creaci®Æn, modificaci®Æn, eliminaci®Æn y renombrado** de archivos y carpetas, mostrando la informaci®Æn en una interfaz amigable.
 
-‚úÖ **Registro autom√°tico** en archivos de log diarios.  
-‚úÖ **Interfaz moderna y f√°cil de usar**.  
-‚úÖ **Opci√≥n para ignorar archivos del sistema y la papelera de reciclaje**.  
-‚úÖ **Soporte para m√∫ltiples idiomas (Espa√±ol/Ingl√©s)** basado en la configuraci√≥n del sistema.  
-‚úÖ **Optimizaci√≥n para evitar spam de eventos repetidos**.  
+? **Registro autom®¢tico** en archivos de log diarios.  
+? **Interfaz moderna y f®¢cil de usar**.  
+? **Opci®Æn para ignorar archivos del sistema y la papelera de reciclaje**.  
+? **Soporte para m®≤ltiples idiomas (Espa?ol/Ingl®¶s)** basado en la configuraci®Æn del sistema.  
+? **Optimizaci®Æn para evitar spam de eventos repetidos**.  
 
 ---
 
-## üõ†Ô∏è **Tecnolog√≠as Utilizadas**
+## ??? **Tecnolog®™as Utilizadas**
 
-| Tecnolog√≠a       | Descripci√≥n |
+| Tecnolog®™as       | Descripci®Æn |
 |-----------------|------------|
 | C# (.NET 8)     | Lenguaje principal |
-| WPF             | Interfaz gr√°fica |
+| WPF             | Interfaz gr®¢fica |
 | FileSystemWatcher | Monitoreo de archivos en tiempo real |
-| XAML            | Dise√±o de UI |
-| MVVM (opcional) | Patr√≥n de arquitectura |
+| XAML            | Dise?o de UI |
+| MVVM (opcional) | Patr®Æn de arquitectura |
 
 ---
 
-## üì∏ **Capturas de Pantalla**
+## ?? **Capturas de Pantalla**
 
-### üìå **Interfaz Principal**
+### ?? **Interfaz Principal**
 <img src="assets/screenshot1.png" alt="Monitor de Archivos" width="600"/>
 
 ---
 
-## üöÄ **Instalaci√≥n y Uso**
+## ?? **Instalaci®Æn y Uso**
 
-### 1Ô∏è‚É£ **Requisitos Previos**
+### 1?? **Requisitos Previos**
 - Tener **.NET 8** instalado en tu equipo.
 - **Visual Studio** (recomendado para desarrollo).
 
-### 2Ô∏è‚É£ **Clonar el Repositorio**
+### 2?? **Clonar el Repositorio**
 ```sh
 git clone https://github.com/tu-usuario/FileSystemMonitor.git
 cd FileSystemMonitor

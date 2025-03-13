@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using FileSystemMonitor.Models;
 
@@ -7,14 +6,30 @@ namespace FileSystemMonitor.Helpers
 {
     public static class LogHelper
     {
-        private static string logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MonitorArchivos.log");
+        private static string logFilePath = GetLogFilePath();
 
-        // Guardar un evento en el log
+        public static string GetLogFilePath()
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string logDirectory = Path.Combine(desktopPath, "Registro de monitoreo");
+
+            // Crear la carpeta si no existe
+            if (!Directory.Exists(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            // Generar un nuevo archivo de log cada día
+            string date = DateTime.Now.ToString("yyyy-MM-dd");
+            return Path.Combine(logDirectory, $"MonitorArchivos_{date}.log");
+        }
+
         public static void SaveLogEntry(LogEntry entry)
         {
             try
             {
-                File.AppendAllText(logFilePath, entry.ToString() + Environment.NewLine);
+                string logPath = GetLogFilePath(); // Asegura que se usa el log del día
+                File.AppendAllText(logPath, entry.ToString() + Environment.NewLine);
             }
             catch (Exception ex)
             {
@@ -22,26 +37,12 @@ namespace FileSystemMonitor.Helpers
             }
         }
 
-        // Leer todos los registros del log
-        public static List<string> ReadLogEntries()
-        {
-            try
-            {
-                return File.Exists(logFilePath) ? new List<string>(File.ReadAllLines(logFilePath)) : new List<string>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al leer el log: {ex.Message}");
-                return new List<string>();
-            }
-        }
-
-        // Borrar el log
         public static void ClearLog()
         {
             try
             {
-                File.WriteAllText(logFilePath, string.Empty);
+                string logPath = GetLogFilePath();
+                File.WriteAllText(logPath, string.Empty);
             }
             catch (Exception ex)
             {
