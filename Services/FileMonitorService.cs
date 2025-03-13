@@ -31,7 +31,9 @@ namespace FileSystemMonitor.Services
         public void StartMonitoring(bool userOnly)
         {
             filterUserOnly = userOnly;
-            StopMonitoring();
+
+            if (watchers.Count > 0) // ⚠️ Evita detener el monitoreo antes de iniciarlo
+                StopMonitoring();
 
             foreach (var drive in DriveInfo.GetDrives().Where(d => d.IsReady))
             {
@@ -51,11 +53,13 @@ namespace FileSystemMonitor.Services
                 watchers.Add(watcher);
             }
 
-            OnLogEntryCreated?.Invoke(new LogEntry { Timestamp = DateTime.Now, EventType = "📡 Monitoreo iniciado..." });
+            OnLogEntryCreated?.Invoke(new LogEntry { Timestamp = DateTime.Now, EventType = "📡 Monitoreo iniciado...", FilePath = "Sistema" });
         }
 
         public void StopMonitoring()
         {
+            if (watchers.Count == 0) return; // ⚠️ No mostrar "Monitoreo detenido" si no hay monitoreo activo
+
             foreach (var watcher in watchers)
             {
                 watcher.EnableRaisingEvents = false;
@@ -63,38 +67,16 @@ namespace FileSystemMonitor.Services
             }
             watchers.Clear();
 
-            OnLogEntryCreated?.Invoke(new LogEntry { Timestamp = DateTime.Now, EventType = "❌ Monitoreo detenido." });
+            OnLogEntryCreated?.Invoke(new LogEntry { Timestamp = DateTime.Now, EventType = "❌ Monitoreo detenido.", FilePath = "Sistema" });
         }
 
-        private void OnCreated(object sender, FileSystemEventArgs e)
-        {
-            if (ShouldIgnoreEvent(e.FullPath) || copiedFiles.Contains(e.FullPath))
-                return;
 
-            string originalFile = DetectCopiedFile(e.FullPath);
-            var entry = new LogEntry
-            {
-                Timestamp = DateTime.Now,
-                EventType = !string.IsNullOrEmpty(originalFile) ? "Copiado" : "Creado",
-                FilePath = e.FullPath
-            };
-
-            if (!string.IsNullOrEmpty(originalFile))
-            {
-                entry.EventType = "Copiado";
-                entry.OldFilePath = originalFile;
-            }
-
-            copiedFiles.Add(e.FullPath);
-            LogHelper.SaveLogEntry(entry);
-            OnLogEntryCreated?.Invoke(entry);
-        }
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            if (ShouldIgnoreEvent(e.FullPath) || copiedFiles.Contains(e.FullPath))
-                return;
+            if (ShouldIgnoreEvent(e.FullPath)) return;
 
+            // 📌 Evitar eventos repetitivos en poco tiempo
             if (recentEvents.TryGetValue(e.FullPath, out DateTime lastEventTime) &&
                 (DateTime.Now - lastEventTime) < eventCooldown)
                 return;
@@ -104,13 +86,41 @@ namespace FileSystemMonitor.Services
             var entry = new LogEntry
             {
                 Timestamp = DateTime.Now,
-                EventType = "Modificado",
+                EventType = "✏️ Modificado",
                 FilePath = e.FullPath
             };
 
             LogHelper.SaveLogEntry(entry);
             OnLogEntryCreated?.Invoke(entry);
         }
+
+
+        private void OnCreated(object sender, FileSystemEventArgs e)
+        {
+            if (ShouldIgnoreEvent(e.FullPath))
+                return;
+
+            string originalFile = DetectCopiedFile(e.FullPath);
+            var entry = new LogEntry
+            {
+                Timestamp = DateTime.Now,
+                EventType = !string.IsNullOrEmpty(originalFile) ? "📑 Copiado" : "📂 Creado",
+                FilePath = e.FullPath
+            };
+
+            if (!string.IsNullOrEmpty(originalFile))
+            {
+                entry.EventType = "📑 Copiado";
+                entry.OldFilePath = originalFile;
+
+                // 🔹 Agregar ruta del archivo original
+                entry.FilePath += $" (Duplicado de: {Path.GetFileName(originalFile)} | 📁 Ruta original: {originalFile})";
+            }
+
+            LogHelper.SaveLogEntry(entry);
+            OnLogEntryCreated?.Invoke(entry);
+        }
+
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
@@ -122,7 +132,7 @@ namespace FileSystemMonitor.Services
             var entry = new LogEntry
             {
                 Timestamp = DateTime.Now,
-                EventType = IsRecycleBinPath(e.FullPath) ? "Enviado a Papelera" : "Eliminado",
+                EventType = IsRecycleBinPath(e.FullPath) ? "🗑️ Enviado a Papelera" : "🚮 Eliminado",
                 FilePath = e.FullPath
             };
 
@@ -138,7 +148,7 @@ namespace FileSystemMonitor.Services
             var entry = new LogEntry
             {
                 Timestamp = DateTime.Now,
-                EventType = "Renombrado",
+                EventType = "🔄 Renombrado",
                 FilePath = e.FullPath,
                 OldFilePath = e.OldFullPath
             };
@@ -146,6 +156,7 @@ namespace FileSystemMonitor.Services
             LogHelper.SaveLogEntry(entry);
             OnLogEntryCreated?.Invoke(entry);
         }
+
 
         private bool ShouldIgnoreEvent(string filePath)
         {
@@ -168,33 +179,58 @@ namespace FileSystemMonitor.Services
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(newFile.Name);
             string extension = newFile.Extension;
 
+            // 🔹 Posibles sufijos de copia en distintos idiomas
             string[] copySuffixes = { " - copia", " - copy", " - kopi", " - kopya" };
 
-            foreach (var suffix in copySuffixes)
-            {
-                if (fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-                {
-                    string originalFileName = fileNameWithoutExtension[..^suffix.Length] + extension;
-                    string originalFile = FindOriginalFile(originalFileName, newFile.DirectoryName);
+            // 🔹 Eliminar números en paréntesis (ejemplo: " - copia (2)")
+            string cleanedFileName = System.Text.RegularExpressions.Regex.Replace(fileNameWithoutExtension, @"\s(\- copia|\- copy|\- kopi|\- kopya)(\s\(\d+\))?$", "");
 
-                    if (originalFile != null && AreFilesIdentical(originalFile, newFile.FullName))
-                        return originalFile;
-                }
-            }
+            // 🏷 Buscar primero si hay una copia reciente que pueda ser el origen
+            string latestCopy = FindLatestCopy(cleanedFileName, extension, newFile.DirectoryName);
+
+            if (latestCopy != null && AreFilesIdentical(latestCopy, newFile.FullName))
+                return latestCopy;
+
+            // Si no encuentra una copia reciente, busca el original más antiguo
+            string originalFile = FindOriginalFile(cleanedFileName + extension, newFile.DirectoryName);
+
+            // 🔍 Verificar si realmente es una copia idéntica antes de asignarlo
+            if (originalFile != null && AreFilesIdentical(originalFile, newFile.FullName))
+                return originalFile;
 
             return null;
         }
+
+        private string FindLatestCopy(string baseFileName, string extension, string directoryPath)
+        {
+            DirectoryInfo dir = new DirectoryInfo(directoryPath);
+            var potentialCopies = dir.GetFiles()
+                .Where(f => f.Name.StartsWith(baseFileName, StringComparison.OrdinalIgnoreCase) &&
+                            IsCopiedFile(f.FullName))
+                .OrderByDescending(f => f.LastWriteTime) // 📅 Ordenar por fecha de modificación más reciente
+                .ToList();
+
+            return potentialCopies.FirstOrDefault()?.FullName;
+        }
+
+        private bool IsCopiedFile(string filePath)
+        {
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            string[] copySuffixes = { " - copia", " - copy", " - kopi", " - kopya" };
+
+            return copySuffixes.Any(suffix => fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        }
+
+
 
         private bool AreFilesIdentical(string path1, string path2)
         {
             FileInfo file1 = new FileInfo(path1);
             FileInfo file2 = new FileInfo(path2);
 
-            // Verificar si los archivos tienen el mismo tamaño
             if (file1.Length != file2.Length)
                 return false;
 
-            // Intentar leer los archivos con seguridad
             try
             {
                 using (FileStream fs1 = new FileStream(path1, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -211,7 +247,6 @@ namespace FileSystemMonitor.Services
             }
             catch (IOException)
             {
-                // Si el archivo está en uso, simplemente asumimos que no se pueden comparar y retornamos false.
                 return false;
             }
         }
