@@ -19,7 +19,7 @@
 
 ---
 
-## ?**Tecnolog¡as Utilizadas**
+## **Tecnolog¡as Utilizadas**
 
 | Tecnolog¡as       | Descripci¢n |
 |-----------------|------------|
@@ -28,13 +28,6 @@
 | FileSystemWatcher | Monitoreo de archivos en tiempo real |
 | XAML            | Dise?o de UI |
 | MVVM (opcional) | Patr¢n de arquitectura |
-
----
-
-## **Capturas de Pantalla**
-
-### **Interfaz Principal**
-<img src="assets/screenshot1.png" alt="Monitor de Archivos" width="600"/>
 
 ---
 
