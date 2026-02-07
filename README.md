@@ -21,6 +21,7 @@
 
 ## 📖 About
 (Free Version have lenght reg limit)
+
 **FileSystemMonitor** is a lightweight Windows desktop application that monitors file system changes in real-time. Built with **WPF** and **.NET 8**, it tracks file and folder creation, modification, deletion, and renaming events with a clean, modern interface.
 
 Perfect for developers, sysadmins, and power users who need to track what's happening on their file system.
