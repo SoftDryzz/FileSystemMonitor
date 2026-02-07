@@ -10,7 +10,6 @@
 
 **Real-time file system monitoring for Windows**
 
-[English](#english) | [Español](#español)
 
 <img src="https://raw.githubusercontent.com/SoftDryzz/FileSystemMonitor/main/screenshot.png" alt="Screenshot" width="700"/>
 
